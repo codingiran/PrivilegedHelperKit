@@ -1,0 +1,2 @@
+# PrivilegedHelperKit
+PrivilegedHelper for macOS
