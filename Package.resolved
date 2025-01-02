@@ -1,0 +1,33 @@
+{
+  "originHash" : "91c3fad6bd7bcc6f6de98363b600cf3201f034d0e9eeaa146776d37cdb70631f",
+  "pins" : [
+    {
+      "identity" : "appleextension",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/codingiran/AppleExtension.git",
+      "state" : {
+        "revision" : "94887681b2480135a47605aa1705907def4a1be8",
+        "version" : "3.0.1"
+      }
+    },
+    {
+      "identity" : "objcexceptioncatcher",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/codingiran/ObjCExceptionCatcher.git",
+      "state" : {
+        "revision" : "f9761d7abac8fc8a6f9f9a0022dcac27f6760ef9",
+        "version" : "1.0.1"
+      }
+    },
+    {
+      "identity" : "scriptrunner",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/codingiran/ScriptRunner.git",
+      "state" : {
+        "revision" : "c89891d2c90aff1bdc238c0f0bc29ef0402c3476",
+        "version" : "0.0.1"
+      }
+    }
+  ],
+  "version" : 3
+}
