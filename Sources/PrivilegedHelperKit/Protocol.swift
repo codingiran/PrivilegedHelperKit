@@ -7,7 +7,7 @@
 
 import Foundation
 
-@objc public protocol PrivilegedHelperXPCProtocol: NSObjectProtocol {
+@objc public protocol PrivilegedHelperXPCProtocol {
     /// Get helper runner version
     func getHelperVersion(sharedDirectory: String, resultBack: ((PrivilegedHelperVersion?) -> Void)?)
 
@@ -18,7 +18,8 @@ import Foundation
     func uninstall()
 }
 
-public protocol PrivilegedHelperDelegate: NSObjectProtocol {
+public protocol PrivilegedHelperDelegate {
     func xpcInterfaceProtocol() -> Protocol
+
     func didOutputLog(level: PrivilegedHelperKit.LogLevel, message: String)
 }

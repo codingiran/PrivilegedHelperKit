@@ -5,8 +5,8 @@ import ScriptRunner
 import Security
 import ServiceManagement
 
-open class PrivilegedHelperManager {
-    public weak var delegate: PrivilegedHelperManager.HelperDelegate?
+open class PrivilegedHelperManager: NSObject {
+    public var delegate: PrivilegedHelperManager.HelperDelegate?
     private var auth: AuthorizationRef?
     private let machServiceName: String
     private let mainAppBundleIdentifier: String
@@ -26,6 +26,7 @@ open class PrivilegedHelperManager {
     public required init(machServiceName: String, mainAppBundleIdentifier: String) {
         self.machServiceName = machServiceName
         self.mainAppBundleIdentifier = mainAppBundleIdentifier
+        super.init()
         do {
             try initAuthorizationRef()
         } catch {
@@ -399,7 +400,10 @@ private extension PrivilegedHelperManager {
     }
 
     func getHelperProxy(result: @escaping ((PrivilegedHelperXPCProtocol?) -> Void)) {
-        let connection = createConnection()
+        guard let connection = createConnection() else {
+            result(nil)
+            return
+        }
         guard let proxy = connection.remoteObjectProxyWithErrorHandler({ [weak self] error in
             self?.connection = nil
             self?.log(.error, "failed to get proxy: \(error.localizedDescription)")
@@ -412,13 +416,16 @@ private extension PrivilegedHelperManager {
         result(proxy)
     }
 
-    func createConnection() -> NSXPCConnection {
+    func createConnection() -> NSXPCConnection? {
         if let connection = connection {
             return connection
         }
+        guard let delegate else {
+            return nil
+        }
         let newConnection = NSXPCConnection(machServiceName: machServiceName, options: .privileged)
         newConnection.exportedObject = self
-        newConnection.remoteObjectInterface = NSXPCInterface(with: PrivilegedHelperXPCProtocol.self)
+        newConnection.remoteObjectInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.invalidationHandler = { [weak self] in
             self?.connection?.invalidationHandler = nil
             OperationQueue.main.addOperation {

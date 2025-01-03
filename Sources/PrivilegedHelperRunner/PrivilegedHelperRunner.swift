@@ -3,7 +3,7 @@ import os.log
 import PrivilegedHelperKit
 
 open class PrivilegedHelperRunner: NSObject {
-    public weak var delegate: PrivilegedHelperRunner.RunnerDelegate?
+    public var delegate: PrivilegedHelperRunner.RunnerDelegate?
     private var listener: NSXPCListener
     private var connections = [NSXPCConnection]()
     private var shouldQuit: Bool = false
@@ -43,7 +43,8 @@ open class PrivilegedHelperRunner: NSObject {
 
 extension PrivilegedHelperRunner: NSXPCListenerDelegate {
     public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
-        newConnection.exportedInterface = NSXPCInterface(with: PrivilegedHelperXPCProtocol.self)
+        guard let delegate else { return false }
+        newConnection.exportedInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.exportedObject = self
         newConnection.invalidationHandler = { [weak self] in
             if let connectionIndex = self?.connections.firstIndex(of: newConnection) {
