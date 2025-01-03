@@ -9,11 +9,16 @@ import Foundation
 
 @objc public protocol PrivilegedHelperXPCProtocol: NSObjectProtocol {
     /// Get helper runner version
-    func getVersion(workingDir: String, resultBack: ((String?) -> Void)?)
-    
+    func getHelperVersion(sharedDirectory: String, resultBack: ((PrivilegedHelperVersion?) -> Void)?)
+
     /// Exit process
     func exitProcess()
 
     /// Uninstall helper runner
     func uninstall()
+}
+
+public protocol PrivilegedHelperDelegate: NSObjectProtocol {
+    func xpcInterfaceProtocol() -> Protocol
+    func didOutputLog(level: PrivilegedHelperKit.LogLevel, message: String)
 }

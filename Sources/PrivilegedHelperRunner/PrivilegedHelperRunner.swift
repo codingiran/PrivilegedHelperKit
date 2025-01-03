@@ -64,9 +64,9 @@ extension PrivilegedHelperRunner: NSXPCListenerDelegate {
 // MARK: - PrivilegedHelperXPCProtocol
 
 extension PrivilegedHelperRunner: PrivilegedHelperXPCProtocol {
-    public func getVersion(workingDir: String, resultBack: ((String?) -> Void)?) {
-        let version = delegate?.version(of: self, workingDir: workingDir)
-        log(.debug, "Privileged Helper's version is \(version ?? "null")")
+    public func getHelperVersion(sharedDirectory: String, resultBack: ((PrivilegedHelperVersion?) -> Void)?) {
+        let version = delegate?.helperVersion(of: self, sharedDirectory: sharedDirectory)
+        log(.debug, "Privileged Helper's version is \(version?.description ?? "null")")
         resultBack?(version)
     }
 

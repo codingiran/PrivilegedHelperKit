@@ -11,10 +11,9 @@ import PrivilegedHelperKit
 import ServiceManagement
 
 public extension PrivilegedHelperManager {
-    protocol HelperDelegate: NSObjectProtocol {
-        func workingDirectory(of helperManager: PrivilegedHelperManager) -> String?
-        func supportUnInstallHelperVersion(of helperManager: PrivilegedHelperManager) -> Double
-        func helperManager(_ manager: PrivilegedHelperManager, didOutputLog level: PrivilegedHelperKit.LogLevel, message: String)
+    protocol HelperDelegate: PrivilegedHelperDelegate {
+        func sharedDirectory(of helperManager: PrivilegedHelperManager) -> String?
+        func supportUnInstallHelperVersion(of helperManager: PrivilegedHelperManager) -> PrivilegedHelperVersion
         func helperManager(_ manager: PrivilegedHelperManager, xpcDisconnect reason: XPCDisconnectReason)
         @MainActor func showTextAlert(_ text: String) async
         @MainActor func showLoginItemAlert() async -> HelperLoginItemAlertResult
@@ -71,7 +70,7 @@ public extension PrivilegedHelperManager {
 
 extension PrivilegedHelperManager: PrivilegedHelperKit.Loggable {
     public func log(_ level: PrivilegedHelperKit.LogLevel, _ message: any PrivilegedHelperKit.LogMessaging) {
-        delegate?.helperManager(self, didOutputLog: level, message: message.logString)
+        delegate?.didOutputLog(level: level, message: message.logString)
     }
 }
 

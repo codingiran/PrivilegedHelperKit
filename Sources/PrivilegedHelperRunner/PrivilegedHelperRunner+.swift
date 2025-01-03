@@ -9,9 +9,8 @@ import Foundation
 import PrivilegedHelperKit
 
 public extension PrivilegedHelperRunner {
-    protocol RunnerDelegate: NSObjectProtocol {
-        func version(of runner: PrivilegedHelperRunner, workingDir: String) -> String?
-        func helperRunner(_ runner: PrivilegedHelperRunner, didOutputLog level: PrivilegedHelperKit.LogLevel, message: String)
+    protocol RunnerDelegate: PrivilegedHelperDelegate {
+        func helperVersion(of runner: PrivilegedHelperRunner, sharedDirectory: String) -> PrivilegedHelperVersion?
     }
 }
 
@@ -20,6 +19,6 @@ public extension PrivilegedHelperRunner {
 extension PrivilegedHelperRunner: PrivilegedHelperKit.Loggable {
     public func log(_ level: PrivilegedHelperKit.LogLevel, _ message: any PrivilegedHelperKit.LogMessaging) {
         guard let delegate = delegate else { return }
-        delegate.helperRunner(self, didOutputLog: level, message: message.logString)
+        delegate.didOutputLog(level: level, message: message.logString)
     }
 }

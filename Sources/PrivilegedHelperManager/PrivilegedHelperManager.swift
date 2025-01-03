@@ -60,11 +60,14 @@ open class PrivilegedHelperManager {
         let helperURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Library/LaunchServices/" + machServiceName)
         guard
             let helperBundleInfo = CFBundleCopyInfoDictionaryForURL(helperURL as CFURL) as? [String: Any],
-            let helperVersion = helperBundleInfo["CFBundleShortVersionString"] as? String
+            let bundleIdentifier = helperBundleInfo["CFBundleIdentifier"] as? String,
+            let bundleShortVersion = helperBundleInfo["CFBundleShortVersionString"] as? String,
+            let bundleVersion = helperBundleInfo["CFBundleVersion"] as? String
         else {
             log(.error, "Check helper status failed: notFound")
             return .notFound
         }
+        let helperBundleVersion = PrivilegedHelperVersion(bundleIdentifier: bundleIdentifier, bundleVersion: bundleVersion, bundleShortVersion: bundleShortVersion)
         let helperFileExists = FileManager.default.fileExists(atPath: "/Library/PrivilegedHelperTools/\(machServiceName)")
         if !helperFileExists {
             log(.error, "Check helper status failed: notFound")
@@ -78,17 +81,17 @@ open class PrivilegedHelperManager {
                 let version = try await self.getHelperVersion()
                 return version
             }
-            let version = try await task.value
-            log(.info, "helper version \(version) require version \(helperVersion)")
-            let versionMatch = version == helperVersion
+            let helperFileVersion = try await task.value
+            log(.info, "current helper file version is \(helperFileVersion.description), require version \(helperBundleVersion.description)")
+            let versionMatch = helperFileVersion.isEqual(helperBundleVersion)
             let interval = Date().timeIntervalSince(time)
-            var supportUnInstall = false
-            if let versionNumber = Double(version),
-               let supportUnInstallVersion = delegate?.supportUnInstallHelperVersion(of: self),
-               versionNumber >= supportUnInstallVersion
-            {
-                supportUnInstall = true
-            }
+            let supportUnInstallHelperVersion = delegate?.supportUnInstallHelperVersion(of: self)
+            let supportUnInstall: Bool = {
+                guard let supportUnInstallHelperVersion else {
+                    return false
+                }
+                return helperFileVersion.isGreaterThanOrEqualTo(supportUnInstallHelperVersion)
+            }()
             log(.info, "check helper using time: \(interval)")
             return versionMatch ? .installed : .needUpdate(supportUnInstall)
         } catch {
@@ -99,13 +102,13 @@ open class PrivilegedHelperManager {
     }
 
     /// Get helper version from xpc endpoint
-    public func getHelperVersion() async throws -> String {
+    public func getHelperVersion() async throws -> PrivilegedHelperVersion {
         let proxy = try await helperProxy
-        guard let workingDir = delegate?.workingDirectory(of: self) else {
+        guard let sharedDirectory = delegate?.sharedDirectory(of: self) else {
             throw PrivilegedHelperManager.HelperError.workingDirectoryNotProvided
         }
         return try await withCheckedThrowingContinuation { cont in
-            proxy.getVersion(workingDir: workingDir) { version in
+            proxy.getHelperVersion(sharedDirectory: sharedDirectory) { version in
                 guard let version else {
                     cont.resume(throwing: PrivilegedHelperManager.HelperError.runnerBundleVersionEmpty)
                     return
@@ -116,7 +119,7 @@ open class PrivilegedHelperManager {
     }
 
     /// Check helper install
-    private func checkHelperInstall(didTryCount: Int = 0) async -> Bool {
+    public func checkHelperInstall(didTryCount: Int = 0) async -> Bool {
         do {
             log(.debug, "checking helper install")
             let status = try await getHelperStatus()
