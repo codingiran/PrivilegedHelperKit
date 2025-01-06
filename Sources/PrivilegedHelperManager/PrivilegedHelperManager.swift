@@ -416,7 +416,6 @@ private extension PrivilegedHelperManager {
         guard let proxy = connection.remoteObjectProxyWithErrorHandler({ [weak self] error in
             self?.connection = nil
             self?.log(.error, "failed to get proxy: \(error.localizedDescription)")
-            result(nil)
         }) as? PrivilegedHelperXPCProtocol else {
             log(.error, "failed to get proxy: can not convert to PrivilegedHelperXPCProtocol")
             result(nil)
