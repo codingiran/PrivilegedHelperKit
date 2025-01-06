@@ -19,12 +19,9 @@ open class PrivilegedHelperManager: NSObject {
         }
     }
 
-    public func getPrivilegedHelperProxy<T>(completion: @escaping (Result<T, Error>) -> Void) where T: PrivilegedHelperXPCProtocol {
+    public func getPrivilegedHelperProxy(completion: @escaping (Result<AnyObject, Error>) -> Void) {
         Task {
-            guard let proxy = try await self.helperProxy as? T else {
-                completion(.failure(PrivilegedHelperManager.HelperError.helperProxyCreateFailed))
-                return
-            }
+            let proxy = try await self.helperProxy
             completion(.success(proxy))
         } catch: { error in
             completion(.failure(error))
