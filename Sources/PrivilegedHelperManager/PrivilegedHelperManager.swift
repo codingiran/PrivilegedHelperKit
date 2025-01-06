@@ -19,6 +19,18 @@ open class PrivilegedHelperManager: NSObject {
         }
     }
 
+    public func getPrivilegedHelperProxy<T>(completion: @escaping (Result<T, Error>) -> Void) where T: PrivilegedHelperXPCProtocol {
+        Task {
+            guard let proxy = try await self.helperProxy as? T else {
+                completion(.failure(PrivilegedHelperManager.HelperError.helperProxyCreateFailed))
+                return
+            }
+            completion(.success(proxy))
+        } catch: { error in
+            completion(.failure(error))
+        }
+    }
+
     /// Initialize PrivilegedHelperManager
     /// - Parameters:
     ///   - machServiceName: XPC Service Name
