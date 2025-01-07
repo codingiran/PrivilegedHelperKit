@@ -129,10 +129,16 @@ open class PrivilegedHelperManager: NSObject {
     }
 
     /// Check helper install
-    public func checkHelperInstall(didTryCount: Int = 0) async -> Bool {
+    public func checkHelperInstall() async -> Bool {
+        log(.debug, "checking helper install")
+        return await isHelperInstalled()
+    }
+
+    /// Check helper is installed or not
+    private func isHelperInstalled(didTryCount: Int = 0, afterUpdate: Bool = false, isLegacy: Bool = false) async -> Bool {
         do {
-            log(.debug, "checking helper install")
             let status = try await getHelperStatus()
+            var isUpdate = false
             switch status {
             case .requiresApproval:
                 if #available(macOS 13.0, *) {
@@ -147,6 +153,7 @@ open class PrivilegedHelperManager: NSObject {
                 }
                 return false
             case let .needUpdate(needUnInstall):
+                isUpdate = true
                 if needUnInstall {
                     log(.info, "helper need update, uninstall older")
                     await uninstallHelper()
@@ -159,16 +166,19 @@ open class PrivilegedHelperManager: NSObject {
                 log(.info, "helper need install")
                 if didTryCount > 0 {
                     if await notifyLegacyInstall() {
-                        return await checkHelperInstall()
+                        return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: true)
                     }
                 } else {
                     if await notifyInstall() {
-                        return await checkHelperInstall(didTryCount: didTryCount + 1)
+                        return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: false)
                     }
                 }
                 return false
             case .installed:
                 log(.info, "helper is installed")
+                Task { @MainActor in
+                    self.delegate?.helperManager(self, didInstalledForUpdate: afterUpdate, isLegacy: isLegacy, didTryCount: didTryCount)
+                }
                 return true
             }
         } catch {
@@ -190,7 +200,7 @@ open class PrivilegedHelperManager: NSObject {
         }
         result.alertAction()
         await delegate?.showTextAlert(result.alertContent)
-        return await checkHelperInstall()
+        return false
     }
 
     private func installHelperDaemon() -> PrivilegedHelperManager.DaemonInstallResult {
@@ -310,7 +320,7 @@ private extension PrivilegedHelperManager {
         }
         do {
             try await legacyInstallHelper()
-            return await checkHelperInstall()
+            return true
         } catch {
             await delegate?.showTextAlert(error.localizedDescription)
             return false

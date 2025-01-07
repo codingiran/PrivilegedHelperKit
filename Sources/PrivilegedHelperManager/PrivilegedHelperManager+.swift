@@ -15,6 +15,7 @@ public extension PrivilegedHelperManager {
         func sharedDirectory(of helperManager: PrivilegedHelperManager) -> String?
         func supportUnInstallHelperVersion(of helperManager: PrivilegedHelperManager) -> PrivilegedHelperVersion
         func helperManager(_ manager: PrivilegedHelperManager, xpcDisconnect reason: XPCDisconnectReason)
+        func helperManager(_ manager: PrivilegedHelperManager, didInstalledForUpdate: Bool, isLegacy: Bool, didTryCount: Int)
         @MainActor func showTextAlert(_ text: String) async
         @MainActor func showLoginItemAlert() async -> HelperLoginItemAlertResult
         @MainActor func showInstallHelperAlert() async -> HelperInstallAlertResult
