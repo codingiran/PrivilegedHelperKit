@@ -1,4 +1,5 @@
 @testable import PrivilegedHelperKit
+import PrivilegedHelperManager
 import XCTest
 
 final class PrivilegedHelperKitTests: XCTestCase {
@@ -18,4 +19,6 @@ final class PrivilegedHelperKitTests: XCTestCase {
         let isGreaterThan = version2.isGreaterThan(version1)
         print(isGreaterThan)
     }
+
+    func testddd() async throws {}
 }

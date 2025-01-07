@@ -19,13 +19,11 @@ open class PrivilegedHelperManager: NSObject {
         }
     }
 
-    public func getPrivilegedHelperProxy(completion: @escaping (Result<AnyObject, Error>) -> Void) {
-        Task {
-            let proxy = try await self.helperProxy
-            completion(.success(proxy))
-        } catch: { error in
-            completion(.failure(error))
+    public func getPrivilegedHelperProxy<T>() async throws -> T where T: PrivilegedHelperXPCProtocol {
+        guard let proxy = try await helperProxy as? T else {
+            throw PrivilegedHelperManager.HelperError.helperProxyCreateFailed
         }
+        return proxy
     }
 
     /// Initialize PrivilegedHelperManager
