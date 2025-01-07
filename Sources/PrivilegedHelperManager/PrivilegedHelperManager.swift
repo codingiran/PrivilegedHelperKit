@@ -57,7 +57,7 @@ open class PrivilegedHelperManager: NSObject {
     }
 
     /// Check helper status
-    public func getHelperStatus() async throws -> HelperStatus {
+    public func getHelperStatus() async -> HelperStatus {
         if #available(macOS 13.0, *),
            let url = URL(string: "/Library/LaunchDaemons/\(machServiceName).plist")
         {
