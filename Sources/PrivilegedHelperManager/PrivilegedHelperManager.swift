@@ -134,54 +134,49 @@ open class PrivilegedHelperManager: NSObject {
 
     /// Check helper is installed or not
     private func isHelperInstalled(didTryCount: Int = 0, afterUpdate: Bool = false, isLegacy: Bool = false) async -> Bool {
-        do {
-            let status = try await getHelperStatus()
-            var isUpdate = false
-            switch status {
-            case .requiresApproval:
-                if #available(macOS 13.0, *) {
-                    if let result = await delegate?.showLoginItemAlert() {
-                        switch result {
-                        case .openSystemSettings:
-                            SMAppService.openSystemSettingsLoginItems()
-                        case .resetDaemon:
-                            await removeInstallHelper()
-                        }
+        let status = await getHelperStatus()
+        var isUpdate = false
+        switch status {
+        case .requiresApproval:
+            if #available(macOS 13.0, *) {
+                if let result = await delegate?.showLoginItemAlert() {
+                    switch result {
+                    case .openSystemSettings:
+                        SMAppService.openSystemSettingsLoginItems()
+                    case .resetDaemon:
+                        await removeInstallHelper()
                     }
                 }
-                return false
-            case let .needUpdate(needUnInstall):
-                isUpdate = true
-                if needUnInstall {
-                    log(.info, "helper need update, uninstall older")
-                    await uninstallHelper()
-                } else {
-                    log(.info, "helper need update, kill older")
-                    await killHelper()
-                }
-                fallthrough
-            case .notFound:
-                log(.info, "helper need install")
-                if didTryCount > 0 {
-                    if await notifyLegacyInstall() {
-                        return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: true)
-                    }
-                } else {
-                    if await notifyInstall() {
-                        return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: false)
-                    }
-                }
-                return false
-            case .installed:
-                log(.info, "helper is installed")
-                Task { @MainActor in
-                    self.delegate?.helperManager(self, didInstalledForUpdate: afterUpdate, isLegacy: isLegacy, didTryCount: didTryCount)
-                }
-                return true
             }
-        } catch {
-            log(.error, "check helper status failed: \(error.localizedDescription)")
             return false
+        case let .needUpdate(needUnInstall):
+            isUpdate = true
+            if needUnInstall {
+                log(.info, "helper need update, uninstall older")
+                await uninstallHelper()
+            } else {
+                log(.info, "helper need update, kill older")
+                await killHelper()
+            }
+            fallthrough
+        case .notFound:
+            log(.info, "helper need install")
+            if didTryCount > 0 {
+                if await notifyLegacyInstall() {
+                    return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: true)
+                }
+            } else {
+                if await notifyInstall() {
+                    return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: false)
+                }
+            }
+            return false
+        case .installed:
+            log(.info, "helper is installed")
+            Task { @MainActor in
+                self.delegate?.helperManager(self, didInstalledForUpdate: afterUpdate, isLegacy: isLegacy, didTryCount: didTryCount)
+            }
+            return true
         }
     }
 

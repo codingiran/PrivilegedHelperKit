@@ -4,15 +4,18 @@ import PrivilegedHelperKit
 
 open class PrivilegedHelperRunner: NSObject {
     public var delegate: PrivilegedHelperRunner.RunnerDelegate?
+    private let machServiceName: String
+    private let bundleIdentifier: String
     private var listener: NSXPCListener
     private var connections = [NSXPCConnection]()
     private var shouldQuit: Bool = false
     private var shouldQuitCheckInterval = 1.0
-    private static var bundleIdentifier: String { Bundle.main.bundleIdentifier ?? "" }
 
-    override public init() {
+    public init(machServiceName: String, helperBundleIdentifier: String) {
         os_log("Privileged Helper init")
-        self.listener = NSXPCListener(machServiceName: Self.bundleIdentifier)
+        self.machServiceName = machServiceName
+        self.bundleIdentifier = helperBundleIdentifier
+        self.listener = NSXPCListener(machServiceName: machServiceName)
         super.init()
         listener.delegate = self
     }
@@ -49,12 +52,12 @@ extension PrivilegedHelperRunner: NSXPCListenerDelegate {
         newConnection.exportedInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.exportedObject = self
         newConnection.invalidationHandler = { [weak self] in
+            os_log("Privileged Helper XPC connection invalided")
+            self?.log(.debug, "Privileged Helper XPC connection invalided")
             if let connectionIndex = self?.connections.firstIndex(of: newConnection) {
                 self?.connections.remove(at: connectionIndex)
             }
             self?.connectionCheckOnLaunch()
-            os_log("Privileged Helper XPC connection invalided")
-            self?.log(.debug, "Privileged Helper XPC connection invalided")
         }
         newConnection.interruptionHandler = {
             os_log("Privileged Helper XPC connection invalided Interrupted")
@@ -82,7 +85,7 @@ extension PrivilegedHelperRunner: PrivilegedHelperXPCProtocol {
 
     public func uninstall() {
         let process = Process()
-        process.launchPath = "/Library/PrivilegedHelperTools/\(Self.bundleIdentifier)"
+        process.launchPath = "/Library/PrivilegedHelperTools/\(bundleIdentifier)"
         process.qualityOfService = QualityOfService.utility
         process.arguments = ["uninstall", String(getpid())]
         process.launch()
@@ -111,7 +114,7 @@ private extension PrivilegedHelperRunner {
         let process = Process()
         process.launchPath = "/bin/launchctl"
         process.qualityOfService = QualityOfService.utility
-        process.arguments = ["unload", "/Library/LaunchDaemons/\(Self.bundleIdentifier).plist"]
+        process.arguments = ["unload", "/Library/LaunchDaemons/\(bundleIdentifier).plist"]
         process.launch()
         process.waitUntilExit()
 
@@ -120,13 +123,13 @@ private extension PrivilegedHelperRunner {
         }
         os_log("Privileged unloaded from launchctl")
         do {
-            try FileManager.default.removeItem(at: URL(fileURLWithPath: "/Library/LaunchDaemons/\(Self.bundleIdentifier).plist"))
+            try FileManager.default.removeItem(at: URL(fileURLWithPath: "/Library/LaunchDaemons/\(bundleIdentifier).plist"))
         } catch {
             if #available(macOS 11.0, *) { os_log("Privileged Helper plist deletion: \(error.localizedDescription)") }
         }
         os_log("Privileged helper property list deleted")
         do {
-            try FileManager.default.removeItem(at: URL(fileURLWithPath: "/Library/PrivilegedHelperTools/\(Self.bundleIdentifier)"))
+            try FileManager.default.removeItem(at: URL(fileURLWithPath: "/Library/PrivilegedHelperTools/\(bundleIdentifier)"))
         } catch {
             if #available(macOS 11.0, *) { os_log("Privileged Helper deletion: \(error.localizedDescription)") }
         }
