@@ -36,6 +36,8 @@ open class PrivilegedHelperRunner: NSObject {
 
     @objc func connectionCheckOnLaunch() {
         if connections.isEmpty {
+            os_log("Privileged Helper XPC connection empty, should quit")
+            log(.debug, "Privileged Helper XPC connection empty, should quit")
             shouldQuit = true
         }
     }
@@ -52,9 +54,11 @@ extension PrivilegedHelperRunner: NSXPCListenerDelegate {
             }
             self?.connectionCheckOnLaunch()
             os_log("Privileged Helper XPC connection invalided")
+            self?.log(.debug, "Privileged Helper XPC connection invalided")
         }
         newConnection.interruptionHandler = {
             os_log("Privileged Helper XPC connection invalided Interrupted")
+            self.log(.debug, "Privileged Helper XPC connection invalided Interrupted")
         }
         connections.append(newConnection)
         newConnection.resume()
