@@ -438,15 +438,9 @@ private extension PrivilegedHelperManager {
         newConnection.exportedObject = self
         newConnection.remoteObjectInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.invalidationHandler = { [weak self] in
-            self?.connection?.invalidationHandler = nil
-            OperationQueue.main.addOperation {
-                self?.connection = nil
-                self?.log(.error, "XPC Connection Invalidated")
-            }
             self?.handXPCDisconnect(reason: .connectInvalid)
         }
         newConnection.interruptionHandler = { [weak self] in
-            self?.log(.error, "XPC Connection Interrupted - the Helper probably exits or crashes. (If crash, You might find a crash report at /Library/Logs/DiagnosticReports)")
             self?.handXPCDisconnect(reason: .connectInterrupt)
         }
         connection = newConnection
@@ -455,6 +449,18 @@ private extension PrivilegedHelperManager {
     }
 
     func handXPCDisconnect(reason: XPCDisconnectReason) {
-        delegate?.helperManager(self, xpcDisconnect: reason)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            connection?.invalidationHandler = nil
+            connection?.interruptionHandler = nil
+            connection = nil
+            switch reason {
+            case .connectInvalid:
+                log(.error, "XPC Connection Invalidated")
+            case .connectInterrupt:
+                log(.error, "XPC Connection Interrupted - the Helper probably exits or crashes. (If crash, You might find a crash report at /Library/Logs/DiagnosticReports)")
+            }
+            delegate?.helperManager(self, xpcDisconnect: reason)
+        }
     }
 }
