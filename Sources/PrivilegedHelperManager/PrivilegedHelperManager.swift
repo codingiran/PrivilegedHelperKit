@@ -163,10 +163,12 @@ open class PrivilegedHelperManager: NSObject {
             log(.info, "helper need install")
             if didTryCount > 0 {
                 if await notifyLegacyInstall() {
+                    try? await Task.sleep(seconds: isUpdate ? 0.5 : 0.1)
                     return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: true)
                 }
             } else {
                 if await notifyInstall() {
+                    try? await Task.sleep(seconds: isUpdate ? 0.5 : 0.1)
                     return await isHelperInstalled(didTryCount: didTryCount + 1, afterUpdate: isUpdate, isLegacy: false)
                 }
             }
@@ -268,7 +270,7 @@ open class PrivilegedHelperManager: NSObject {
     private func uninstallHelper() async {
         guard let proxy = try? await helperProxy else { return }
         proxy.uninstall()
-        try? await Task.sleep(seconds: 0.1)
+        try? await Task.sleep(seconds: 0.5)
     }
 
     /// Kill helper
