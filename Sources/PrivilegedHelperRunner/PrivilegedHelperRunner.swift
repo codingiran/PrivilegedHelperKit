@@ -48,7 +48,14 @@ open class PrivilegedHelperRunner: NSObject {
 
 extension PrivilegedHelperRunner: NSXPCListenerDelegate {
     public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
-        guard let delegate else { return false }
+        if case .failure(let error) = checkConnectionCodesign(newConnection) {
+            log(.error, "drop connection for \(error.localizedDescription)")
+            return false
+        }
+        guard let delegate else {
+            log(.error, "drop connection for no delegate")
+            return false
+        }
         newConnection.exportedInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.exportedObject = self
         newConnection.invalidationHandler = { [weak self] in

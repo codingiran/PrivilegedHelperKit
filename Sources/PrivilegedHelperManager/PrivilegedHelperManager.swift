@@ -82,7 +82,7 @@ open class PrivilegedHelperManager: NSObject {
             return .notFound
         }
 
-        let timeout: TimeInterval = 2
+        let timeout: TimeInterval = 10
         let time = Date()
         do {
             let task = Task.detached(timeout: timeout) {
