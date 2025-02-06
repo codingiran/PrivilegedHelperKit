@@ -1,5 +1,5 @@
 {
-  "originHash" : "91c3fad6bd7bcc6f6de98363b600cf3201f034d0e9eeaa146776d37cdb70631f",
+  "originHash" : "b899fcc18ad550ee4bac48a42b42159cc5e6b53eb49d9d68fc6351b5b56e4b5e",
   "pins" : [
     {
       "identity" : "appleextension",
@@ -24,8 +24,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/codingiran/ScriptRunner.git",
       "state" : {
-        "revision" : "c89891d2c90aff1bdc238c0f0bc29ef0402c3476",
-        "version" : "0.0.1"
+        "revision" : "2119204f5898f489d5c8569ba42cb93f823544dd",
+        "version" : "0.0.2"
       }
     }
   ],

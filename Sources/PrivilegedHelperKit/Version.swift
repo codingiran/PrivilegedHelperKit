@@ -8,10 +8,10 @@
 import Foundation
 
 @objc(PrivilegedHelperVersion)
-public final class PrivilegedHelperVersion: NSObject, NSSecureCoding {
-    public var bundleIdentifier: String
-    public var bundleVersion: String
-    public var bundleShortVersion: String
+public final class PrivilegedHelperVersion: NSObject, NSSecureCoding, Sendable {
+    public let bundleIdentifier: String
+    public let bundleVersion: String
+    public let bundleShortVersion: String
 
     public init(bundleIdentifier: String, bundleVersion: String, bundleShortVersion: String) {
         self.bundleIdentifier = bundleIdentifier

@@ -29,7 +29,7 @@ extension PrivilegedHelperRunner: PrivilegedHelperKit.Loggable {
 let kSecCSDefaultFlags = 0
 
 extension PrivilegedHelperRunner {
-    enum CodesignCheckError: LocalizedError {
+    enum CodesignCheckError: LocalizedError, Sendable {
         case codeSignNotMatched
         case codeSignCheckFailed(String)
         

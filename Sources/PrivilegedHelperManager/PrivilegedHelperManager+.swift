@@ -24,32 +24,32 @@ public extension PrivilegedHelperManager {
 }
 
 public extension PrivilegedHelperManager {
-    enum XPCDisconnectReason {
+    enum XPCDisconnectReason: Sendable {
         case connectInvalid
         case connectInterrupt
     }
 }
 
 public extension PrivilegedHelperManager {
-    enum HelperLoginItemAlertResult {
+    enum HelperLoginItemAlertResult: Sendable {
         case openSystemSettings
         case resetDaemon
     }
 
-    enum HelperInstallAlertResult {
+    enum HelperInstallAlertResult: Sendable {
         case install
         case cancel
         case quit
     }
 
-    enum HelperLegacyInstallAlertResult {
+    enum HelperLegacyInstallAlertResult: Sendable {
         case confirm
         case cancel
     }
 }
 
 public extension PrivilegedHelperManager {
-    enum HelperStatus {
+    enum HelperStatus: Sendable {
         case installed
         case notFound
         case needUpdate(_ needUnInstall: Bool)
@@ -76,7 +76,7 @@ extension PrivilegedHelperManager: PrivilegedHelperKit.Loggable {
 }
 
 public extension PrivilegedHelperManager {
-    enum DaemonInstallResult {
+    enum DaemonInstallResult: Sendable {
         case success
         case authorizationFail
         case getAdminFail
@@ -120,6 +120,7 @@ public extension PrivilegedHelperManager {
             }
         }
 
+        @MainActor
         public func alertAction() {
             switch self {
             case let .blessError(code, machServiceName):
@@ -138,7 +139,7 @@ public extension PrivilegedHelperManager {
 }
 
 public extension PrivilegedHelperManager {
-    enum HelperError: LocalizedError {
+    enum HelperError: LocalizedError, Sendable {
         case delegateNotProvided
         case authorizationFailed(OSStatus)
         case machServiceNameNotProvided
@@ -163,4 +164,10 @@ public extension PrivilegedHelperManager {
             }
         }
     }
+}
+
+@globalActor
+public enum PrivilegedHelperManagerXPCActor {
+    public actor TheActor {}
+    public static let shared = TheActor()
 }

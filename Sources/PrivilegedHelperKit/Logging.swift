@@ -6,7 +6,7 @@
 //
 
 public extension PrivilegedHelperKit {
-    enum LogLevel: String {
+    enum LogLevel: String, Sendable {
         case verbose
         case info
         case warning
@@ -15,11 +15,11 @@ public extension PrivilegedHelperKit {
         case wtf
     }
 
-    protocol LogMessaging: Any {
+    protocol LogMessaging: Sendable {
         var logString: String { get }
     }
 
-    protocol Loggable {
+    protocol Loggable: Sendable {
         func log(_ level: PrivilegedHelperKit.LogLevel, _ message: PrivilegedHelperKit.LogMessaging)
     }
 }

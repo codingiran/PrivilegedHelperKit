@@ -2,7 +2,7 @@ import Foundation
 import os.log
 import PrivilegedHelperKit
 
-open class PrivilegedHelperRunner: NSObject {
+open class PrivilegedHelperRunner: NSObject, @unchecked Sendable {
     public var delegate: PrivilegedHelperRunner.RunnerDelegate?
     private let machServiceName: String
     private let bundleIdentifier: String

@@ -5,17 +5,17 @@ import ScriptRunner
 import Security
 import ServiceManagement
 
-open class PrivilegedHelperManager: NSObject {
+open class PrivilegedHelperManager: NSObject, @unchecked Sendable {
     public var delegate: PrivilegedHelperManager.HelperDelegate?
     private var auth: AuthorizationRef?
     private let machServiceName: String
     private let mainAppBundleIdentifier: String
     private var cancelInstallCheck = false
+
+    @PrivilegedHelperManagerXPCActor
     private var connection: NSXPCConnection? {
         willSet {
-            if newValue == nil {
-                connection?.invalidate()
-            }
+            if newValue == nil { connection?.invalidate() }
         }
     }
 
@@ -110,6 +110,7 @@ open class PrivilegedHelperManager: NSObject {
     }
 
     /// Get helper version from xpc endpoint
+    @PrivilegedHelperManagerXPCActor
     public func getHelperVersion() async throws -> PrivilegedHelperVersion {
         let proxy = try await helperProxy
         guard let sharedDirectory = delegate?.sharedDirectory(of: self) else {
@@ -182,6 +183,7 @@ open class PrivilegedHelperManager: NSObject {
         }
     }
 
+    @PrivilegedHelperManagerXPCActor
     private func notifyInstall() async -> Bool {
         guard await showInstallHelperAlert() else {
             exit(EXIT_SUCCESS)
@@ -190,20 +192,17 @@ open class PrivilegedHelperManager: NSObject {
             return false
         }
         let result = installHelperDaemon()
+        connection = nil
         if case .success = result {
             return true
         }
-        result.alertAction()
+        await result.alertAction()
         await delegate?.showTextAlert(result.alertContent)
         return false
     }
 
     private func installHelperDaemon() -> PrivilegedHelperManager.DaemonInstallResult {
         log(.info, "instating HelperDaemon")
-
-        defer {
-            connection = nil
-        }
 
         // Create authorization reference for the user
         var authRef: AuthorizationRef?
@@ -267,6 +266,7 @@ open class PrivilegedHelperManager: NSObject {
     }
 
     /// Uninstall helper
+    @PrivilegedHelperManagerXPCActor
     private func uninstallHelper() async {
         guard let proxy = try? await helperProxy else { return }
         proxy.uninstall()
@@ -274,6 +274,7 @@ open class PrivilegedHelperManager: NSObject {
     }
 
     /// Kill helper
+    @PrivilegedHelperManagerXPCActor
     private func killHelper() async {
         if let proxy = try? await helperProxy {
             proxy.exitProcess()
@@ -285,6 +286,7 @@ open class PrivilegedHelperManager: NSObject {
 // MARK: - Legacy
 
 private extension PrivilegedHelperManager {
+    @PrivilegedHelperManagerXPCActor
     func legacyInstallHelper() async throws {
         let script = getInstallScript()
         try ScriptRunner().runScriptWithRootPermission(script: script)
@@ -292,6 +294,7 @@ private extension PrivilegedHelperManager {
         try? await Task.sleep(seconds: 0.5)
     }
 
+    @PrivilegedHelperManagerXPCActor
     func removeInstallHelper(waitInterval: TimeInterval = 3) async {
         let machServiceName = machServiceName
         let script = """
@@ -308,6 +311,7 @@ private extension PrivilegedHelperManager {
         }
     }
 
+    @MainActor
     func notifyLegacyInstall() async -> Bool {
         await showInstallLegacyHelperAlert()
         if cancelInstallCheck {
@@ -395,6 +399,7 @@ private extension PrivilegedHelperManager {
 // MARK: - XPC
 
 private extension PrivilegedHelperManager {
+    @PrivilegedHelperManagerXPCActor
     var helperProxy: PrivilegedHelperXPCProtocol {
         get async throws {
             return try await withCheckedThrowingContinuation { [weak self] cont in
@@ -413,6 +418,7 @@ private extension PrivilegedHelperManager {
         }
     }
 
+    @PrivilegedHelperManagerXPCActor
     func getHelperProxy(result: @escaping ((PrivilegedHelperXPCProtocol?) -> Void)) {
         guard let connection = createConnection() else {
             result(nil)
@@ -429,6 +435,7 @@ private extension PrivilegedHelperManager {
         result(proxy)
     }
 
+    @PrivilegedHelperManagerXPCActor
     func createConnection() -> NSXPCConnection? {
         if let connection = connection {
             return connection
@@ -440,9 +447,12 @@ private extension PrivilegedHelperManager {
         newConnection.exportedObject = self
         newConnection.remoteObjectInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.invalidationHandler = { [weak self] in
+            self?.connection?.invalidationHandler = nil
+            self?.connection = nil
             self?.handXPCDisconnect(reason: .connectInvalid)
         }
         newConnection.interruptionHandler = { [weak self] in
+            self?.connection?.interruptionHandler = nil
             self?.handXPCDisconnect(reason: .connectInterrupt)
         }
         connection = newConnection
@@ -450,19 +460,14 @@ private extension PrivilegedHelperManager {
         return newConnection
     }
 
+    @PrivilegedHelperManagerXPCActor
     func handXPCDisconnect(reason: XPCDisconnectReason) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            connection?.invalidationHandler = nil
-            connection?.interruptionHandler = nil
-            connection = nil
-            switch reason {
-            case .connectInvalid:
-                log(.error, "XPC Connection Invalidated")
-            case .connectInterrupt:
-                log(.error, "XPC Connection Interrupted - the Helper probably exits or crashes. (If crash, You might find a crash report at /Library/Logs/DiagnosticReports)")
-            }
-            delegate?.helperManager(self, xpcDisconnect: reason)
+        switch reason {
+        case .connectInvalid:
+            log(.error, "XPC Connection Invalidated")
+        case .connectInterrupt:
+            log(.error, "XPC Connection Interrupted - the Helper probably exits or crashes. (If crash, You might find a crash report at /Library/Logs/DiagnosticReports)")
         }
+        delegate?.helperManager(self, xpcDisconnect: reason)
     }
 }
