@@ -144,6 +144,7 @@ public extension PrivilegedHelperManager {
         case authorizationFailed(OSStatus)
         case machServiceNameNotProvided
         case workingDirectoryNotProvided
+        case xpcConnectionCreateFailed
         case helperProxyCreateFailed
         case runnerBundleVersionEmpty
 
@@ -157,6 +158,8 @@ public extension PrivilegedHelperManager {
                 return "MachServiceName not provided"
             case .workingDirectoryNotProvided:
                 return "Working directory not provided"
+            case .xpcConnectionCreateFailed:
+                return "Failed to create XPC connection"
             case .helperProxyCreateFailed:
                 return "Failed to create helper proxy"
             case .runnerBundleVersionEmpty:

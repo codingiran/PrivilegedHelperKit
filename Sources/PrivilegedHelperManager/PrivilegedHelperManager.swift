@@ -19,11 +19,8 @@ open class PrivilegedHelperManager: NSObject, @unchecked Sendable {
         }
     }
 
-    public func getPrivilegedHelperProxy<T>() async throws -> T where T: PrivilegedHelperXPCProtocol {
-        guard let proxy = try await helperProxy as? T else {
-            throw PrivilegedHelperManager.HelperError.helperProxyCreateFailed
-        }
-        return proxy
+    public func getPrivilegedHelperProxy() async throws -> any PrivilegedHelperXPCProtocol {
+        return try await helperProxy()
     }
 
     /// Initialize PrivilegedHelperManager
@@ -112,7 +109,7 @@ open class PrivilegedHelperManager: NSObject, @unchecked Sendable {
     /// Get helper version from xpc endpoint
     @PrivilegedHelperManagerXPCActor
     public func getHelperVersion() async throws -> PrivilegedHelperVersion {
-        let proxy = try await helperProxy
+        let proxy = try helperProxy()
         guard let sharedDirectory = delegate?.sharedDirectory(of: self) else {
             throw PrivilegedHelperManager.HelperError.workingDirectoryNotProvided
         }
@@ -268,7 +265,7 @@ open class PrivilegedHelperManager: NSObject, @unchecked Sendable {
     /// Uninstall helper
     @PrivilegedHelperManagerXPCActor
     private func uninstallHelper() async {
-        guard let proxy = try? await helperProxy else { return }
+        guard let proxy = try? helperProxy() else { return }
         proxy.uninstall()
         try? await Task.sleep(seconds: 0.5)
     }
@@ -276,7 +273,7 @@ open class PrivilegedHelperManager: NSObject, @unchecked Sendable {
     /// Kill helper
     @PrivilegedHelperManagerXPCActor
     private func killHelper() async {
-        if let proxy = try? await helperProxy {
+        if let proxy = try? helperProxy() {
             proxy.exitProcess()
         }
         try? await Task.sleep(seconds: 0.1)
@@ -400,39 +397,20 @@ private extension PrivilegedHelperManager {
 
 private extension PrivilegedHelperManager {
     @PrivilegedHelperManagerXPCActor
-    var helperProxy: PrivilegedHelperXPCProtocol {
-        get async throws {
-            return try await withCheckedThrowingContinuation { [weak self] cont in
-                guard let self else {
-                    cont.resume(throwing: PrivilegedHelperManager.HelperError.helperProxyCreateFailed)
-                    return
-                }
-                getHelperProxy { proxy in
-                    guard let proxy else {
-                        cont.resume(throwing: PrivilegedHelperManager.HelperError.helperProxyCreateFailed)
-                        return
-                    }
-                    cont.resume(returning: proxy)
-                }
-            }
-        }
-    }
-
-    @PrivilegedHelperManagerXPCActor
-    func getHelperProxy(result: @escaping ((PrivilegedHelperXPCProtocol?) -> Void)) {
+    func helperProxy() throws -> PrivilegedHelperXPCProtocol {
         guard let connection = createConnection() else {
-            result(nil)
-            return
+            log(.error, "failed to create connection")
+            throw PrivilegedHelperManager.HelperError.xpcConnectionCreateFailed
         }
-        guard let proxy = connection.remoteObjectProxyWithErrorHandler({ [weak self] error in
+        let proxy: PrivilegedHelperXPCProtocol? = connection.getRemoteObjectProxy { [weak self] error in
             self?.connection = nil
             self?.log(.error, "failed to get proxy: \(error.localizedDescription)")
-        }) as? PrivilegedHelperXPCProtocol else {
-            log(.error, "failed to get proxy: can not convert to PrivilegedHelperXPCProtocol")
-            result(nil)
-            return
         }
-        result(proxy)
+        guard let proxy else {
+            log(.error, "failed to get proxy: can not convert to PrivilegedHelperXPCProtocol")
+            throw PrivilegedHelperManager.HelperError.helperProxyCreateFailed
+        }
+        return proxy
     }
 
     @PrivilegedHelperManagerXPCActor

@@ -46,6 +46,18 @@ open class PrivilegedHelperRunner: NSObject, @unchecked Sendable {
     }
 }
 
+public extension PrivilegedHelperRunner {
+    func getPrivilegedHelperProxy() async throws -> (any PrivilegedHelperXPCProtocol)? {
+        guard let connection = connections.first else {
+            return nil
+        }
+        let proxy: PrivilegedHelperXPCProtocol? = connection.getRemoteObjectProxy { [weak self] error in
+            self?.log(.debug, "Privileged Helper XPC getRemoteObjectProxy failed: \(error.localizedDescription)")
+        }
+        return proxy
+    }
+}
+
 extension PrivilegedHelperRunner: NSXPCListenerDelegate {
     public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
         if case .failure(let error) = checkConnectionCodesign(newConnection) {
