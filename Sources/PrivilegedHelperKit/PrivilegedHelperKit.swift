@@ -9,3 +9,22 @@ import Foundation
 let version = "0.1.6"
 
 public enum PrivilegedHelperKit: Sendable {}
+
+public extension PrivilegedHelperKit {
+    enum XPCError: LocalizedError, Sendable {
+        case xpcConnectionCreateFailed
+        case helperProxyCreateFailed
+        case helperProxyCastTypeFailed(String)
+
+        public var errorDescription: String? {
+            switch self {
+            case .xpcConnectionCreateFailed:
+                return "Failed to create XPC connection"
+            case .helperProxyCreateFailed:
+                return "Failed to create helper proxy"
+            case let .helperProxyCastTypeFailed(typeName):
+                return "Failed to cast helper proxy to \(typeName)"
+            }
+        }
+    }
+}

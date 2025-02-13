@@ -47,12 +47,12 @@ open class PrivilegedHelperRunner: NSObject, @unchecked Sendable {
 }
 
 public extension PrivilegedHelperRunner {
-    func getPrivilegedHelperProxy() async throws -> (any PrivilegedHelperXPCProtocol)? {
+    func getPrivilegedHelperProxy<T>() async throws -> T where T: PrivilegedHelperXPCProtocol {
         guard let connection = connections.first else {
-            return nil
+            throw PrivilegedHelperKit.XPCError.xpcConnectionCreateFailed
         }
-        let proxy: PrivilegedHelperXPCProtocol? = connection.getRemoteObjectProxy { [weak self] error in
-            self?.log(.debug, "Privileged Helper XPC getRemoteObjectProxy failed: \(error.localizedDescription)")
+        let proxy: T = try connection.getRemoteObjectProxy { [weak self] error in
+            self?.log(.error, "Privileged Helper XPC getRemoteObjectProxy failed: \(error.localizedDescription)")
         }
         return proxy
     }

@@ -8,11 +8,11 @@
 import Foundation
 
 public extension NSXPCConnection {
-    func getRemoteObjectProxy<T>(_ handler: @escaping (any Error) -> Void) -> T? {
+    func getRemoteObjectProxy<T>(_ handler: @escaping (any Error) -> Void) throws -> T {
         guard let proxy = remoteObjectProxyWithErrorHandler({ error in
             handler(error)
         }) as? T else {
-            return nil
+            throw PrivilegedHelperKit.XPCError.helperProxyCastTypeFailed("\(T.self)")
         }
         return proxy
     }

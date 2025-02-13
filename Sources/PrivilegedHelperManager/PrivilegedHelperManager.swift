@@ -21,7 +21,7 @@ open class PrivilegedHelperManager: NSObject, @unchecked Sendable {
 
     public func getPrivilegedHelperProxy<T>() async throws -> T where T: PrivilegedHelperXPCProtocol {
         guard let proxy = try await helperProxy() as? T else {
-            throw PrivilegedHelperManager.HelperError.helperProxyCastTypeFailed("\(T.self)")
+            throw PrivilegedHelperKit.XPCError.helperProxyCastTypeFailed("\(T.self)")
         }
         return proxy
     }
@@ -403,15 +403,11 @@ private extension PrivilegedHelperManager {
     func helperProxy() throws -> PrivilegedHelperXPCProtocol {
         guard let connection = createConnection() else {
             log(.error, "failed to create connection")
-            throw PrivilegedHelperManager.HelperError.xpcConnectionCreateFailed
+            throw PrivilegedHelperKit.XPCError.xpcConnectionCreateFailed
         }
-        let proxy: PrivilegedHelperXPCProtocol? = connection.getRemoteObjectProxy { [weak self] error in
+        let proxy: PrivilegedHelperXPCProtocol = try connection.getRemoteObjectProxy { [weak self] error in
             self?.connection = nil
             self?.log(.error, "failed to get proxy: \(error.localizedDescription)")
-        }
-        guard let proxy else {
-            log(.error, "failed to get proxy: can not convert to PrivilegedHelperXPCProtocol")
-            throw PrivilegedHelperManager.HelperError.helperProxyCreateFailed
         }
         return proxy
     }
