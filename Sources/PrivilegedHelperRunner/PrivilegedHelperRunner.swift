@@ -58,6 +58,7 @@ extension PrivilegedHelperRunner: NSXPCListenerDelegate {
         }
         newConnection.exportedInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.exportedObject = self
+        newConnection.remoteObjectInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.invalidationHandler = { [weak self] in
             os_log("Privileged Helper XPC connection invalided")
             self?.log(.debug, "Privileged Helper XPC connection invalided")

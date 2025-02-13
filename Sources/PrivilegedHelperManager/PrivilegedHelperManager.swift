@@ -445,6 +445,7 @@ private extension PrivilegedHelperManager {
         }
         let newConnection = NSXPCConnection(machServiceName: machServiceName, options: .privileged)
         newConnection.exportedObject = self
+        newConnection.exportedInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.remoteObjectInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.invalidationHandler = { [weak self] in
             self?.connection?.invalidationHandler = nil

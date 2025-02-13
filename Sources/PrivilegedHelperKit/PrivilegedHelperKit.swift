@@ -5,7 +5,7 @@ import Foundation
 #error("PrivilegedHelperKit doesn't support Swift versions below 5.5.")
 #endif
 
-/// Current PrivilegedHelperKit version 0.1.4. Necessary since SPM doesn't use dynamic libraries. Plus this will be more accurate.
-let version = "0.1.4"
+/// Current PrivilegedHelperKit version 0.1.5. Necessary since SPM doesn't use dynamic libraries. Plus this will be more accurate.
+let version = "0.1.5"
 
 public enum PrivilegedHelperKit: Sendable {}

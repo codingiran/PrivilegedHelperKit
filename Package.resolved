@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/codingiran/ObjCExceptionCatcher.git",
       "state" : {
-        "revision" : "f9761d7abac8fc8a6f9f9a0022dcac27f6760ef9",
-        "version" : "1.0.1"
+        "revision" : "21561a112472459d54d31bf6fe8bc0c1260a6407",
+        "version" : "1.0.2"
       }
     },
     {
