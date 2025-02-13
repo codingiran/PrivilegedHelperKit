@@ -19,8 +19,11 @@ open class PrivilegedHelperManager: NSObject, @unchecked Sendable {
         }
     }
 
-    public func getPrivilegedHelperProxy() async throws -> any PrivilegedHelperXPCProtocol {
-        return try await helperProxy()
+    public func getPrivilegedHelperProxy<T>() async throws -> T where T: PrivilegedHelperXPCProtocol {
+        guard let proxy = try await helperProxy() as? T else {
+            throw PrivilegedHelperManager.HelperError.helperProxyCastTypeFailed("\(T.self)")
+        }
+        return proxy
     }
 
     /// Initialize PrivilegedHelperManager

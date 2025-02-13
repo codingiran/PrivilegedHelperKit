@@ -146,6 +146,7 @@ public extension PrivilegedHelperManager {
         case workingDirectoryNotProvided
         case xpcConnectionCreateFailed
         case helperProxyCreateFailed
+        case helperProxyCastTypeFailed(String)
         case runnerBundleVersionEmpty
 
         public var errorDescription: String? {
@@ -162,6 +163,8 @@ public extension PrivilegedHelperManager {
                 return "Failed to create XPC connection"
             case .helperProxyCreateFailed:
                 return "Failed to create helper proxy"
+            case let .helperProxyCastTypeFailed(typeName):
+                return "Failed to cast helper proxy to \(typeName)"
             case .runnerBundleVersionEmpty:
                 return "Runner bundle version is empty"
             }
