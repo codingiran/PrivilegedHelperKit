@@ -1,6 +1,6 @@
 import Foundation
 import os.log
-import PrivilegedHelperKit
+@_exported import PrivilegedHelperKit
 
 open class PrivilegedHelperRunner: NSObject, @unchecked Sendable {
     public var delegate: PrivilegedHelperRunner.RunnerDelegate?

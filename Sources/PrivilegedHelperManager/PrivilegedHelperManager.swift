@@ -1,6 +1,6 @@
 import AppleExtension
 import Foundation
-import PrivilegedHelperKit
+@_exported import PrivilegedHelperKit
 import ScriptRunner
 import Security
 import ServiceManagement

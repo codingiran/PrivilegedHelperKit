@@ -7,7 +7,7 @@
 
 import AppKit.NSPasteboard
 import Foundation
-import PrivilegedHelperKit
+@_exported import PrivilegedHelperKit
 import ServiceManagement
 
 public extension PrivilegedHelperManager {

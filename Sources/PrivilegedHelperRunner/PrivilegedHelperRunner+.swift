@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import PrivilegedHelperKit
+@_exported import PrivilegedHelperKit
 
 public extension PrivilegedHelperRunner {
     protocol RunnerDelegate: PrivilegedHelperDelegate {
