@@ -109,7 +109,7 @@ extension PrivilegedHelperRunner: NSXPCListenerDelegate {
             os_log("Privileged Helper XPC connection invalided Interrupted")
             log(.debug, "Privileged Helper XPC connection invalided Interrupted")
         }
-        delegate?.helperRunner(self, xpcConnectionBehavior: behavior)
+        delegate?.helperRunner(self, xpcConnectionActing: behavior)
     }
 }
 

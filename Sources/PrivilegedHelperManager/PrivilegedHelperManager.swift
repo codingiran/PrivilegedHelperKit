@@ -449,6 +449,6 @@ private extension PrivilegedHelperManager {
         case .interrupt:
             log(.error, "XPC Connection Interrupted - the Helper probably exits or crashes. (If crash, You might find a crash report at /Library/Logs/DiagnosticReports)")
         }
-        delegate?.helperManager(self, xpcConnectionBehavior: behavior)
+        delegate?.helperManager(self, xpcConnectionActing: behavior)
     }
 }
