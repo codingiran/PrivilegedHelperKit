@@ -14,19 +14,12 @@ public extension PrivilegedHelperManager {
     protocol HelperDelegate: PrivilegedHelperDelegate {
         func sharedDirectory(of helperManager: PrivilegedHelperManager) -> String?
         func supportUnInstallHelperVersion(of helperManager: PrivilegedHelperManager) -> PrivilegedHelperVersion
-        func helperManager(_ manager: PrivilegedHelperManager, xpcDisconnect reason: XPCDisconnectReason)
+        func helperManager(_ manager: PrivilegedHelperManager, xpcConnectionBehavior: PrivilegedHelperKit.XPCConnectionBehavior)
         func helperManager(_ manager: PrivilegedHelperManager, didInstalledForUpdate: Bool, isLegacy: Bool, didTryCount: Int)
         @MainActor func showTextAlert(_ text: String) async
         @MainActor func showLoginItemAlert() async -> HelperLoginItemAlertResult
         @MainActor func showInstallHelperAlert() async -> HelperInstallAlertResult
         @MainActor func showInstallLegacyHelperAlert() async -> HelperLegacyInstallAlertResult
-    }
-}
-
-public extension PrivilegedHelperManager {
-    enum XPCDisconnectReason: Sendable {
-        case connectInvalid
-        case connectInterrupt
     }
 }
 

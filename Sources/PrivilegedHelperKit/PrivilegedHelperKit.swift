@@ -27,4 +27,10 @@ public extension PrivilegedHelperKit {
             }
         }
     }
+
+    enum XPCConnectionBehavior: Sendable {
+        case established
+        case invalid
+        case interrupt
+    }
 }

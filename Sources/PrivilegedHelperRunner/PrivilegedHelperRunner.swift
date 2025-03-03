@@ -41,7 +41,6 @@ open class PrivilegedHelperRunner: NSObject, @unchecked Sendable {
         guard connections.isEmpty else {
             return
         }
-        delegate?.xpcDidDisconnect(of: self)
         if shoulQuitWhenXPCDisconnect {
             os_log("Privileged Helper XPC connection empty, should quit")
             log(.debug, "Privileged Helper XPC connection empty, should quit")
@@ -84,20 +83,33 @@ extension PrivilegedHelperRunner: NSXPCListenerDelegate {
         newConnection.exportedObject = self
         newConnection.remoteObjectInterface = NSXPCInterface(with: delegate.xpcInterfaceProtocol())
         newConnection.invalidationHandler = { [weak self] in
-            os_log("Privileged Helper XPC connection invalided")
-            self?.log(.debug, "Privileged Helper XPC connection invalided")
+            self?.handXPCConnectionBehavior(.invalid)
             if let connectionIndex = self?.connections.firstIndex(of: newConnection) {
                 self?.connections.remove(at: connectionIndex)
             }
             self?.connectionCheckOnLaunch()
         }
-        newConnection.interruptionHandler = {
-            os_log("Privileged Helper XPC connection invalided Interrupted")
-            self.log(.debug, "Privileged Helper XPC connection invalided Interrupted")
+        newConnection.interruptionHandler = { [weak self] in
+            self?.handXPCConnectionBehavior(.interrupt)
         }
         connections.append(newConnection)
+        handXPCConnectionBehavior(.established)
         newConnection.resume()
         return true
+    }
+
+    private func handXPCConnectionBehavior(_ behavior: PrivilegedHelperKit.XPCConnectionBehavior) {
+        switch behavior {
+        case .established:
+            os_log("Privileged Helper XPC connection established")
+        case .invalid:
+            os_log("Privileged Helper XPC connection invalided")
+            log(.debug, "Privileged Helper XPC connection invalided")
+        case .interrupt:
+            os_log("Privileged Helper XPC connection invalided Interrupted")
+            log(.debug, "Privileged Helper XPC connection invalided Interrupted")
+        }
+        delegate?.helperRunner(self, xpcConnectionBehavior: behavior)
     }
 }
 

@@ -427,25 +427,28 @@ private extension PrivilegedHelperManager {
         newConnection.invalidationHandler = { [weak self] in
             self?.connection?.invalidationHandler = nil
             self?.connection = nil
-            self?.handXPCDisconnect(reason: .connectInvalid)
+            self?.handXPCConnectionBehavior(.invalid)
         }
         newConnection.interruptionHandler = { [weak self] in
             self?.connection?.interruptionHandler = nil
-            self?.handXPCDisconnect(reason: .connectInterrupt)
+            self?.handXPCConnectionBehavior(.interrupt)
         }
         connection = newConnection
         newConnection.resume()
+        handXPCConnectionBehavior(.established)
         return newConnection
     }
 
     @PrivilegedHelperManagerXPCActor
-    func handXPCDisconnect(reason: XPCDisconnectReason) {
-        switch reason {
-        case .connectInvalid:
+    func handXPCConnectionBehavior(_ behavior: PrivilegedHelperKit.XPCConnectionBehavior) {
+        switch behavior {
+        case .established:
+            log(.info, "XPC Connection Established")
+        case .invalid:
             log(.error, "XPC Connection Invalidated")
-        case .connectInterrupt:
+        case .interrupt:
             log(.error, "XPC Connection Interrupted - the Helper probably exits or crashes. (If crash, You might find a crash report at /Library/Logs/DiagnosticReports)")
         }
-        delegate?.helperManager(self, xpcDisconnect: reason)
+        delegate?.helperManager(self, xpcConnectionBehavior: behavior)
     }
 }
