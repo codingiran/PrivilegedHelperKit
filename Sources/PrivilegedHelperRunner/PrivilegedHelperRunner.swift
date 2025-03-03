@@ -38,11 +38,23 @@ open class PrivilegedHelperRunner: NSObject, @unchecked Sendable {
     }
 
     @objc func connectionCheckOnLaunch() {
-        if connections.isEmpty {
+        guard connections.isEmpty else {
+            return
+        }
+        delegate?.xpcDidDisconnect(of: self)
+        if shoulQuitWhenXPCDisconnect {
             os_log("Privileged Helper XPC connection empty, should quit")
             log(.debug, "Privileged Helper XPC connection empty, should quit")
             shouldQuit = true
+        } else {
+            os_log("Privileged Helper XPC connection empty")
+            log(.debug, "Privileged Helper XPC connection empty")
         }
+    }
+
+    private var shoulQuitWhenXPCDisconnect: Bool {
+        guard let delegate else { return false }
+        return delegate.shoulQuitWhenXpcDisconnect(of: self)
     }
 }
 

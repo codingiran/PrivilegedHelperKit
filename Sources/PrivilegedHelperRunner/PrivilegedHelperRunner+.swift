@@ -11,6 +11,8 @@ import Foundation
 public extension PrivilegedHelperRunner {
     protocol RunnerDelegate: PrivilegedHelperDelegate {
         func helperVersion(of runner: PrivilegedHelperRunner, sharedDirectory: String) -> PrivilegedHelperVersion?
+        func xpcDidDisconnect(of runner: PrivilegedHelperRunner)
+        func shoulQuitWhenXpcDisconnect(of runner: PrivilegedHelperRunner) -> Bool
     }
 }
 
