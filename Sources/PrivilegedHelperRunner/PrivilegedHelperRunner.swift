@@ -42,12 +42,12 @@ open class PrivilegedHelperRunner: NSObject, @unchecked Sendable {
             return
         }
         if shoulQuitWhenXPCDisconnect {
-            os_log("Privileged Helper XPC connection empty, should quit")
-            log(.debug, "Privileged Helper XPC connection empty, should quit")
+            os_log("Privileged Helper XPC connection empty, should quit as burial offering")
+            log(.debug, "Privileged Helper XPC connection empty, should quit as burial offering")
             shouldQuit = true
         } else {
-            os_log("Privileged Helper XPC connection empty")
-            log(.debug, "Privileged Helper XPC connection empty")
+            os_log("Privileged Helper XPC connection empty, keep running as Daemon")
+            log(.debug, "Privileged Helper XPC connection empty, keep running as Daemon")
         }
     }
 
