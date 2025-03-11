@@ -1,13 +1,12 @@
 {
-  "originHash" : "b899fcc18ad550ee4bac48a42b42159cc5e6b53eb49d9d68fc6351b5b56e4b5e",
   "pins" : [
     {
       "identity" : "appleextension",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/codingiran/AppleExtension.git",
       "state" : {
-        "revision" : "94887681b2480135a47605aa1705907def4a1be8",
-        "version" : "3.0.1"
+        "revision" : "9c9fe6442c47ddc96ba367fc90484c7fecad493a",
+        "version" : "3.0.2"
       }
     },
     {
@@ -29,5 +28,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
