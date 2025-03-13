@@ -71,7 +71,7 @@ public extension PrivilegedHelperRunner {
 
 extension PrivilegedHelperRunner: NSXPCListenerDelegate {
     public func listener(_ listener: NSXPCListener, shouldAcceptNewConnection newConnection: NSXPCConnection) -> Bool {
-        if case .failure(let error) = checkConnectionCodesign(newConnection) {
+        if case .failure(let error) = PrivilegedHelperKit.checkConnectionCodesign(newConnection) {
             log(.error, "drop connection for \(error.localizedDescription)")
             return false
         }
