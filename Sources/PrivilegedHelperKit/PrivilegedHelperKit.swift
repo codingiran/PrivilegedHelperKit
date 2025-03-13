@@ -28,9 +28,20 @@ public extension PrivilegedHelperKit {
         }
     }
 
-    enum XPCConnectionBehavior: Sendable {
+    enum XPCConnectionBehavior: Sendable, CustomStringConvertible {
         case established
         case invalid
         case interrupt
+
+        public var description: String {
+            switch self {
+            case .established:
+                return "established"
+            case .invalid:
+                return "invalid"
+            case .interrupt:
+                return "interrupt"
+            }
+        }
     }
 }
