@@ -9,7 +9,7 @@ import Foundation
 
 @objc public protocol PrivilegedHelperXPCProtocol: Sendable {
     /// Get helper runner version
-    func getHelperVersion(sharedDirectory: String, resultBack: ((PrivilegedHelperVersion?) -> Void)?)
+    func getHelperVersion(sharedDirectory: String, resultBack: (@Sendable (PrivilegedHelperVersion?) -> Void)?)
 
     /// Exit process
     func exitProcess()
